@@ -20,3 +20,6 @@ CMD ["npx", "ts-node", "src/index.ts"]
 EXPOSE 3001 
 
 RUN npm cache clean --force
+
+RUN npm run build
+CMD ["node", "dist/index.js"]
