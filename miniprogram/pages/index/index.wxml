@@ -23,4 +23,6 @@
     </view>
     <button bindtap="onReset">再来一次</button>
   </view>
+  <canvas canvas-id="posterCanvas" style="width: 600rpx; height: 900rpx; display: none;" width="600" height="900" />
+  <button wx:if="{{result}}" bindtap="onSavePoster" class="save-btn">保存/分享海报</button>
 </view>

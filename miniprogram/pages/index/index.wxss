@@ -41,3 +41,13 @@
   font-size: 28rpx;
   color: #333;
 }
+.save-btn {
+  margin-top: 32rpx;
+  width: 80vw;
+  background: linear-gradient(90deg, #338bff 0%, #38cfff 100%);
+  color: #fff;
+  font-size: 32rpx;
+  border-radius: 12rpx;
+  padding: 20rpx 0;
+  font-weight: bold;
+}
