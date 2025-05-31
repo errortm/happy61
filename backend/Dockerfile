@@ -18,3 +18,5 @@ CMD ["npx", "ts-node", "src/index.ts"]
 
 # 暴露端口（如 3001）
 EXPOSE 3001 
+
+RUN npm cache clean --force
