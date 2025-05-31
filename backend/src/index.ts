@@ -5,7 +5,7 @@ import uploadRouter from './routes/upload';
 import path from 'path';
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 80;
 
 app.use(cors());
 app.use(express.json());
