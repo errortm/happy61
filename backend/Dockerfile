@@ -13,13 +13,11 @@ RUN npm install
 # 复制所有后端代码
 COPY . .
 
-# 启动服务（ts-node 直接运行 TypeScript 入口）
-CMD ["npx", "ts-node", "src/index.ts"]
-
-# 暴露端口（如 3001）
-EXPOSE 3000
-
-RUN npm cache clean --force
-
+# 构建 TypeScript 代码
 RUN npm run build
+
+# 暴露 80 端口
+EXPOSE 80
+
+# 启动服务
 CMD ["node", "dist/index.js"]

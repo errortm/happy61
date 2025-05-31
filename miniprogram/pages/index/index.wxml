@@ -1,0 +1,26 @@
+<view class="container">
+  <view wx:if="{{!result}}">
+    <view class="main-title">时光寄语</view>
+    <view class="sub-title">给童年的自己留一句话，听听TA和未来的你怎么说。</view>
+    <view class="input-card">
+      <view class="input-label">你想对童年的自己说什么？</view>
+      <textarea placeholder="例如：小时候要尽情地玩，开心。" value="{{toChild}}" bindinput="onInput" />
+      <button bindtap="onGenerate" loading="{{loading}}" disabled="{{!toChild || loading}}">{{loading ? '生成中...' : '生成时光寄语'}}</button>
+    </view>
+  </view>
+  <view wx:if="{{result}}">
+    <view class="section-card">
+      <view class="section-title">我对过去的自己说：</view>
+      <view class="section-content">{{toChild}}</view>
+    </view>
+    <view class="section-card">
+      <view class="section-title">过去的我对现在说：</view>
+      <view class="section-content">{{result.childReply}}</view>
+    </view>
+    <view class="section-card">
+      <view class="section-title">未来的我对现在说：</view>
+      <view class="section-content">{{result.futureReply}}</view>
+    </view>
+    <button bindtap="onReset">再来一次</button>
+  </view>
+</view>
