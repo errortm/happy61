@@ -28,11 +28,7 @@
           <div class="section-content">{{ result?.futureReply || '相信自己，未来无限可能！' }}</div>
         </div>
         <div class="poster-bottom">
-          <div class="user-info">
-            <img :src="userInfo.avatar" class="wx-avatar" />
-            <span class="wx-nickname">{{ userInfo.nickname }}</span>
-          </div>
-          <img src="/qrcode.jpg" class="qrcode" />
+          <!-- 删除二维码img标签，避免html2canvas重复截图 -->
         </div>
       </div>
     </div>
@@ -41,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, computed } from 'vue';
+import { ref, nextTick, computed, onMounted, onUnmounted } from 'vue';
 import html2canvas from 'html2canvas';
 
 const toChild = ref('');
@@ -58,6 +54,16 @@ const userInfo = {
 // 10张背景图
 const bgImages = Array.from({length: 10}, (_, i) => `/poster-bg/_Image(${i+1}).png`);
 const selectedBgIndex = ref(0);
+let bgCounter = 0;
+const isUserSelected = ref(false);
+
+onMounted(() => {
+  // 自动轮播逻辑可去除或保留，按需
+});
+onUnmounted(() => {
+  // 清理定时器（如有）
+});
+
 const posterBgStyle = computed(() => ({
   backgroundImage: `url(${bgImages[selectedBgIndex.value]})`,
   backgroundSize: 'cover',
@@ -68,8 +74,10 @@ async function generate() {
   if (!toChild.value) return;
   loading.value = true;
   cardShow.value = false;
-  // 随机选取一张背景图
-  selectedBgIndex.value = Math.floor(Math.random() * bgImages.length);
+  // 顺序切换背景图
+  selectedBgIndex.value = bgCounter;
+  bgCounter = (bgCounter + 1) % bgImages.length;
+  isUserSelected.value = true;
   // 调用后端AI接口
   const res = await fetch('/api/upload', {
     method: 'POST',
@@ -85,25 +93,24 @@ async function generate() {
 async function savePoster() {
   const posterEl = (document.querySelector('.poster-content-wrapper') as HTMLElement);
   if (!posterEl) return;
-  const canvas = await html2canvas(posterEl, { backgroundColor: null });
+  // 只用html2canvas生成基础内容
+  const baseCanvas = await html2canvas(posterEl, { backgroundColor: null });
+  // 新建一个同尺寸的新canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = baseCanvas.width;
+  canvas.height = baseCanvas.height;
+  const ctx = canvas.getContext('2d');
+  // 只绘制html2canvas生成的内容
+  ctx.drawImage(baseCanvas, 0, 0);
+  // 保存图片
   const link = document.createElement('a');
   link.href = canvas.toDataURL('image/png');
-  link.download = '时光机寄语.png';
+  link.download = '时光机寄语海报.png';
   link.click();
 }
 </script>
 
 <style scoped>
-@font-face {
-  font-family: 'SourceHanRoundedSC';
-  src: url('https://cdn.jsdelivr.net/npm/@fontsource/source-han-rounded-sc/files/source-han-rounded-sc-chinese-simplified-400-normal.woff2') format('woff2');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'SourceHanSerifSC';
-  src: url('https://cdn.jsdelivr.net/npm/@fontsource/source-han-serif-sc/files/source-han-serif-sc-chinese-simplified-400-normal.woff2') format('woff2');
-  font-display: swap;
-}
 .start-bg {
   min-height: 100vh;
   background: #f5f7fa;
@@ -218,15 +225,16 @@ async function savePoster() {
 .poster-bg-mask {
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(44,62,80,0.55);
+  background: rgba(44,62,80,0.7);
   z-index: 2;
   pointer-events: none;
   border-radius: 32px;
+  overflow: hidden;
 }
 .poster-content {
   position: relative;
   z-index: 3;
-  padding: 38px 18px 90px 18px;
+  padding: 38px 18px 100px 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -283,21 +291,8 @@ async function savePoster() {
   align-items: flex-end;
   padding: 0 24px;
 }
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.wx-avatar {
-  width: 38px; height: 38px; border-radius: 50%; box-shadow: 0 2px 8px #b3e0ff33;
-}
-.wx-nickname {
-  color: #fff; font-size: 1.05rem; font-weight: 600;
-  text-shadow: 0 2px 8px #0004;
-  font-family: 'SourceHanRoundedSC', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
-}
 .qrcode {
-  width: 58px; height: 58px; border-radius: 12px; box-shadow: 0 2px 8px 0 #b3e0ff33;
+  width: 180px; height: 180px; border-radius: 12px; box-shadow: 0 2px 8px 0 #b3e0ff33;
 }
 .form-area {
   display: flex;
@@ -359,7 +354,6 @@ async function savePoster() {
   .form-area { max-width: 98vw; }
   .poster-content { padding: 14px 6px 80px 6px; }
   .section-card { max-width: 98vw; padding: 12px 0 10px 0; }
-  .qrcode { width: 38px; height: 38px; }
-  .wx-avatar { width: 28px; height: 28px; }
+  .qrcode { width: 180px; height: 180px; }
 }
 </style> 
