@@ -3,6 +3,15 @@
     <div v-if="!result" class="start-container">
       <div class="main-title">时光寄语</div>
       <div class="sub-title">给童年的自己留一句话，听听TA和未来的你怎么说。</div>
+      <div class="bg-thumb-list">
+        <img
+          v-for="(img, idx) in bgImages"
+          :key="img"
+          :src="img"
+          :class="{selected: selectedBgIndex === idx}"
+          @click="selectBg(idx)"
+        />
+      </div>
       <div class="input-card">
         <div class="input-label">你想对童年的自己说什么？</div>
         <textarea v-model="toChild" placeholder="例如：小时候要尽情地玩，开心。" rows="4" class="input-apple" />
@@ -11,8 +20,8 @@
         </button>
       </div>
     </div>
-    <div v-if="result" class="poster-content-wrapper" :style="posterBgStyle">
-      <div class="poster-bg-image"></div>
+    <div v-if="result" class="poster-content-wrapper">
+      <div class="poster-bg-image" :style="posterBgStyle"></div>
       <div class="poster-bg-mask"></div>
       <div class="poster-content" ref="poster">
         <div class="section-card">
@@ -52,7 +61,7 @@ const userInfo = {
 };
 
 // 10张背景图
-const bgImages = Array.from({length: 10}, (_, i) => `/poster-bg/_Image(${i+1}).png`);
+const bgImages = Array.from({length: 10}, (_, i) => `/poster-bg/Image_${i+1}.png`);
 const selectedBgIndex = ref(0);
 let bgCounter = 0;
 const isUserSelected = ref(false);
@@ -64,6 +73,10 @@ onUnmounted(() => {
   // 清理定时器（如有）
 });
 
+function selectBg(idx: number) {
+  selectedBgIndex.value = idx;
+}
+
 const posterBgStyle = computed(() => ({
   backgroundImage: `url(${bgImages[selectedBgIndex.value]})`,
   backgroundSize: 'cover',
@@ -74,10 +87,7 @@ async function generate() {
   if (!toChild.value) return;
   loading.value = true;
   cardShow.value = false;
-  // 顺序切换背景图
-  selectedBgIndex.value = bgCounter;
-  bgCounter = (bgCounter + 1) % bgImages.length;
-  isUserSelected.value = true;
+  await nextTick(); // 等待背景图渲染
   // 调用后端AI接口
   const res = await fetch('/api/upload', {
     method: 'POST',
@@ -86,11 +96,12 @@ async function generate() {
   });
   result.value = await res.json();
   loading.value = false;
-  await nextTick();
+  await nextTick(); // 等待内容渲染
   cardShow.value = true;
 }
 
 async function savePoster() {
+  await nextTick(); // 确保页面渲染
   const posterEl = (document.querySelector('.poster-content-wrapper') as HTMLElement);
   if (!posterEl) return;
   // 只用html2canvas生成基础内容
@@ -216,7 +227,6 @@ async function savePoster() {
 .poster-bg-image {
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
-  background: url('/poster-bg/_Image (7).png') center center/cover no-repeat;
   opacity: 0.55;
   z-index: 1;
   pointer-events: none;
@@ -347,6 +357,26 @@ async function savePoster() {
 .share-btn {
   margin-top: 0;
   background: linear-gradient(90deg, #38cfff 0%, #4f8cff 100%);
+}
+.bg-thumb-list {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  justify-content: center;
+}
+.bg-thumb-list img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  object-fit: cover;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.bg-thumb-list img.selected {
+  border-color: #338bff;
+  box-shadow: 0 0 8px #338bff55;
 }
 @media (max-width: 480px) {
   .poster-content-wrapper, .input-apple { width: 98vw; max-width: 98vw; }

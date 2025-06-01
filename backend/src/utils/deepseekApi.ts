@@ -2,29 +2,6 @@ import axios from 'axios';
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
 
-export async function getTitleByDream(dream: string): Promise<string> {
-  const prompt = `请根据以下梦想，生成一个有荣誉感、专业感的称号，适合投资人社群展示：\n梦想：${dream}\n称号：`;
-  const res = await axios.post(
-    'https://api.deepseek.com/v1/chat/completions',
-    {
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 20
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    }
-  );
-  const title = res.data.choices?.[0]?.message?.content?.trim() || '梦想践行者';
-  return title.replace(/["\"]/g, '');
-}
-
 // V3.1活在当下·鼓励版提示词
 export async function getAiEncouragementByToChild(toChild: string): Promise<{child: string, future: string}> {
   const prompt = `
@@ -77,9 +54,9 @@ export async function getAiEncouragementByToChild(toChild: string): Promise<{chi
   let content = res.data.choices?.[0]?.message?.content?.trim() || '';
   // 解析童年回应和未来回应
   let child = '', future = '';
-  const childMatch = content.match(/童年的你[：:][""]([\s\S]*?)[""]?\n/);
+  const childMatch = content.match(/童年的你[：:][""]?([\s\S]*?)[""]?\n/);
   if (childMatch) child = childMatch[1].trim();
-  const futureMatch = content.match(/未来的你[：:][""]([\s\S]*?)[""]?$/);
+  const futureMatch = content.match(/未来的你[：:][""]?([\s\S]*?)[""]?$/);
   if (futureMatch) future = futureMatch[1].trim();
   // 兜底
   if (!child) child = '你已经很棒了，请继续相信自己！';
